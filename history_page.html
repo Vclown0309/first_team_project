@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动物历史记录</title>
+    <!-- 引入 Vue.js、axios.js 和 Chart.js -->
+    <script src="vue.js"></script>
+    <script src="axios.js"></script>
+    <script src="node_modules/chart.js/dist/chart.umd.js"></script>
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #000;
+            color: #00ffcc;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            color: #00ffcc;
+            text-shadow: 0 0 20px #00ffcc;
+            font-size: 36px;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease;
+        }
+
+        table {
+            width: 100%;
+            max-width: 1200px;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+            border: 2px solid #00ffcc;
+            animation: fadeIn 1s ease;
+        }
+
+        th,
+        td {
+            border: 1px solid #00ffcc;
+            padding: 15px;
+            text-align: center;
+        }
+
+        th {
+            background-color: rgba(0, 255, 204, 0.2);
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .status-normal {
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .status-abnormal {
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        tr:hover {
+            background-color: rgba(0, 255, 204, 0.1);
+            cursor: pointer;
+        }
+
+        #history-chart {
+            margin-top: 40px;
+            width: 90%;
+            max-width: 1200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+            border: 2px solid #00ffcc;
+            animation: fadeIn 1s ease;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 255, 204, 0.3);
+            border-top: 4px solid #00ffcc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-history {
+            color: #ccc;
+            font-style: italic;
+            text-shadow: 0 0 10px #ccc;
+            margin-top: 20px;
+            animation: fadeIn 1s ease;
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- 加载指示器 -->
+        <div v-if="isLoading" class="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+        <h2 v-if="animalId">动物 {{ animalId }} 历史记录</h2>
+        <table v-if="history.length > 0">
+            <thead>
+                <tr>
+                    <th>记录时间</th>
+                    <th>休息时长</th>
+                    <th>健康状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="record in history" :key="record.record_time">
+                    <td>{{ record.record_time }}</td>
+                    <td>{{ record.rest_duration }}</td>
+                    <td :class="record.health_status === '正常'? 'status-normal' :'status-abnormal'">{{ record.health_status }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <p v-else-if="!isLoading" class="no-history">暂未有历史记录</p>
+        <canvas id="history-chart"></canvas>
+    </div>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                isLoading: true,
+                animalId: null,
+                history: [],
+                chart: null
+            },
+            mounted() {
+                // 从 URL 参数中获取 animal_id
+                const urlParams = new URLSearchParams(window.location.search);
+                this.animalId = urlParams.get('animalId');
+                if (this.animalId) {
+                    this.fetchHistoryData(this.animalId);
+                }
+            },
+            methods: {
+                fetchHistoryData(animalId) {
+                    axios.get(`http://127.0.0.1:5000/history/${animalId}`)
+                       .then(response => {
+                            this.history = response.data.history;
+                            this.renderChart();
+                            this.isLoading = false;
+                        })
+                       .catch(error => {
+                            console.error('获取历史记录数据出错:', error);
+                            this.isLoading = false;
+                        });
+                },
+                renderChart() {
+                    const ctx = document.getElementById('history-chart').getContext('2d');
+                    if (this.chart) {
+                        this.chart.destroy();
+                    }
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: this.history.map(record => record.record_time),
+                            datasets: [{
+                                label: '休息时长',
+                                data: this.history.map(record => record.rest_duration),
+                                borderColor: 'rgba(0, 255, 204, 1)',
+                                backgroundColor: 'rgba(0, 255, 204, 0.2)',
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: '休息时长'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: '记录时间'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#00ffcc'
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            return `休息时长: ${context.parsed.y} 秒`;
+                                        }
+                                    },
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#00ffcc',
+                                    bodyColor: '#00ffcc'
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能养殖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+		.login {
+            position: fixed;    /* 固定定位使视频成为底层 */
+            z-index: 1;         /* 设置较低的层级 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            height: 100%;
+            width: auto;
+            object-fit: cover;
+        }
+
+        /* 科技感顶栏 */
+        .dinglan {
+            width: 1472px;
+            height: 100px;
+            background-image: linear-gradient(145deg, #0a1a3a 0%, #1a3a5a 100%);
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            padding-left: 20px;
+            border-bottom: 2px solid #00f7ff;
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 主要功能区 */
+        .zhuyaogongneng {
+            width: 700px;
+            height: 600px;
+            background-image: linear-gradient(45deg, #2A2356 0%, #3A5F8C 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding-left: 20px;
+            border: 1px solid #4a90e2;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.4);
+            margin: 20px;
+        }
+
+        /* 新闻区 */
+        .xinwen {
+            width: 700px;
+            height: 162px;
+            background-image: linear-gradient(90deg, #1a2a3a 0%, #2d4a6a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #3c6e8f;
+            box-shadow: 
+                inset 0 0 15px rgba(60, 110, 143, 0.6),
+                0 0 10px rgba(60, 110, 143, 0.4);
+            border-radius: 5px;
+            margin: 20px;
+        }
+
+        .ming {
+            font-family: "华文行楷", "STXingkai", cursive;
+            width: 700px;
+            height: 90px;
+            color: #00f7ff; /* 霓虹青色 */
+            font-size: 80px;
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+        }
+
+        .yonghu_touxiang,
+        .yonghu_nicheng {
+            margin-left: 20px;
+            color: #ffffff;
+        }
+
+        .shipin {
+            background-color: #0a1a3a;
+            width: 300px;
+            height: 300px;
+            border-radius: 15px;
+            position: relative;
+            border: 1px solid #4a90e2;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.4);
+        }
+
+        .shipin_fenxi {
+            background-color: #0a1a3a;
+            width: 300px;
+            height: 300px;
+            border-radius: 15px;
+            position: relative;
+            margin-left: 20px;
+            border: 1px solid #4a90e2;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.4);
+        }
+
+        .shipin-container {
+            display: flex;
+            flex-direction: row;
+            margin-top: 20px;
+        }
+
+        .getiqingkuang {
+            background-color: #0a1a3a;
+            width: 620px;
+            height: 200px;
+            border-radius: 20px;
+            margin-top: 20px;
+            display: flex;
+            border: 1px solid #4a90e2;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.4);
+        }
+		.zhuyaogongneng,
+		.xinwen {
+			position: relative;  /* 创建定位上下文 */
+			z-index: 2;         /* 设置高于视频的层级 */
+			margin-left: 20px;  /* 保持原有间距 */
+		}
+        #rest-chart {
+            height: 100%!important;
+            width: 100%!important;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+            border: 2px solid #00ffcc;
+            margin-bottom: 30px;
+        }
+        #pig {
+            max-width: 100%;
+            height: 100%;
+            margin-bottom: 20px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+            border: 2px solid #00ffcc;
+        }
+        .yihao{
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1000px;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+            border: 2px solid #00ffcc;
+            
+        }
+        .yihao h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+            text-align: center;
+            
+        }
+
+        /* 按钮样式 */
+        .history-button {
+            background-color: rgba(0, 247, 255, 0.2);
+            color: #00f7ff;
+            border: 1px solid #00f7ff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 247, 255, 0.5);
+        }
+
+        .history-button:hover {
+            background-color: rgba(0, 247, 255, 0.4);
+        }
+
+        /* 加载动画样式 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 8px solid rgba(0, 247, 255, 0.2);
+            border-top: 8px solid #00f7ff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        /* 历史记录显示区域样式 */
+        .history-frame {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+        }
+
+        .no-history {
+            color: #cccccc;
+            font-style: italic;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #health-status {
+            width: 100%;
+            max-width: 1200px;
+            border: 2px solid #00ffcc;
+            border-radius: 20px;
+            padding: 30px;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+        }
+
+        #health-status h2 {
+            margin-top: 0;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        #health-status ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #health-status li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 18px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+       .status-normal {
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+       .status-abnormal {
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        .status-loading {
+            color: #ffff00;
+            font-style: italic;
+            text-shadow: 0 0 10px #ffff00;
+        }
+        .history-button-right-top {
+        	background-color: rgba(0, 247, 255, 0.2);
+            color: #00f7ff;
+            border: 1px solid #00f7ff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 247, 255, 0.5);
+            margin-left: 40px;		
+        }
+    </style>
+    <script src="vue.js"></script>
+    <script src="axios.js"></script>
+    <script src="chart.umd.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="login">
+            <video class="video-background" autoplay="autoplay" loop="loop" muted="muted">
+                <source src="视频.mp4" type="video/mp4" />
+            </video>
+        </div>
+        <div class="dinglan">
+            <div class="ming">畜慧AI监测方舟</div>
+            <div>
+                <button @click="goToAllPigsHistory" class="history-button-right-top" >查看所有猪的历史记录</button>
+            </div>
+            <div class="yonghu_touxiang">1</div>
+            <div class="yonghu_nicheng">2</div>
+        </div>
+        <div class="zhuyaogongneng" >
+            <div class="shipin-container">
+                <div class="shipin">
+                    <img id="pig" src="http://127.0.0.1:5000/video_feed" alt="Video Feed">
+                </div>
+                <div class="shipin_fenxi">
+                    <!-- 用于绘制休息时长柱状图 -->
+                    <canvas id="rest-chart"></canvas>
+                    <!-- 添加一个 span 元素用于显示最后更新时间 -->
+                    <span id="lastUpdated">{{ lastUpdatedText }}</span>
+                </div>
+            </div>
+            <div class="getiqingkuang">
+                <div class="yihao" id="health-status">
+                    <h2>动物健康状态</h2>
+                    <div class="loading-overlay" id="loading-overlay">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <ul>
+                        <li v-for="animalId in allAnimalIds" :key="animalId">
+                            {{ animalId }}:
+                            <span v-if="healthStatus[animalId]" :class="healthStatus[animalId] === '正常' ? 'status-normal' : 'status-abnormal'">
+                                {{ healthStatus[animalId] }}
+                            </span>
+                            <span v-else class="status-loading">当日正在统计...</span>
+                            <!-- 添加查询当前动物历史记录的按钮 -->
+                            <button @click="openHistory(animalId)" class="history-button">查询该动物历史记录</button>
+                        </li>
+                    </ul>
+                    <iframe v-if="showHistoryFrame" :src="historyFrameUrl" class="history-frame"></iframe>
+                    <p v-if="showNoHistory" class="no-history">暂未有历史记录</p>
+                </div>
+            </div>
+        </div>
+            </div>
+        <div class="xinwen"></div>
+    </div>
+    
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                isLoading: false,
+                chart: null,
+                lastUpdated: null,
+                lastUpdatedText: '',
+                healthStatus: {},
+                allAnimalIds: [],
+                showHistoryFrame: false,
+                historyFrameUrl: '',
+                showNoHistory: false,
+                isHistoryButtonActive: false
+            },
+            mounted() {
+                this.isLoading = true;
+                // 获取画布元素
+                const ctx = document.getElementById('rest-chart').getContext('2d');
+
+                // 初始化图表
+                this.chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: '休息时长（秒）',
+                            data: [],
+                            backgroundColor: 'rgba(0, 255, 204, 0.2)',
+                            borderColor: 'rgba(0, 255, 204, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#00ffcc'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `休息时长: ${context.parsed.y} 秒`;
+                                    }
+                                },
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#00ffcc',
+                                bodyColor: '#00ffcc'
+                            }
+                        },
+                        hover: {
+                            mode: 'nearest',
+                            intersect: true
+                        }
+                    }
+                });
+
+                // 初始更新图表
+                this.updateChart();
+
+                // 每隔一定时间（例如 5 分钟）更新一次图表
+                const updateInterval = 5 * 1000; // 5 秒钟
+                setInterval(this.updateChart, updateInterval);
+            },
+            methods: {
+                goToAllPigsHistory() {
+                    window.location.href = 'all_pigs_history.html';
+                },
+                showErrorToast(message) {
+                    const toast = document.createElement('div');
+                    toast.style.position = 'fixed';
+                    toast.style.top = '20px';
+                    toast.style.right = '20px';
+                    toast.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                    toast.style.color = '#fff';
+                    toast.style.padding = '10px 20px';
+                    toast.style.borderRadius = '5px';
+                    toast.textContent = message;
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 3000);
+                },
+                hideLoadingAnimation() {
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'none';
+                    }
+                },
+                showLoadingAnimation() {
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'flex';
+                    }
+                },
+                updateChart() {
+                    this.isLoading = true;
+                    axios.get('http://127.0.0.1:5000/rest_data')
+                      .then(response => {
+                            const data = response.data;
+                            // 更新图表数据
+                            this.chart.data.labels = Object.keys(data.data);
+                            this.chart.data.datasets[0].data = Object.values(data.data);
+                            this.chart.update();
+
+                            // 更新最后更新时间
+                            this.lastUpdated = data.last_updated;
+                            const now = Math.floor(Date.now() / 1000);
+                            const timeDiff = now - this.lastUpdated;
+                            let timeAgo;
+                            if (timeDiff < 60) {
+                                timeAgo = `${timeDiff} 秒前`;
+                            } else if (timeDiff < 3600) {
+                                const minutes = Math.floor(timeDiff / 60);
+                                timeAgo = `${minutes} 分钟前`;
+                            } else {
+                                const hours = Math.floor(timeDiff / 3600);
+                                timeAgo = `${hours} 小时前`;
+                            }
+                            this.lastUpdatedText = `最后更新: ${timeAgo}`;
+
+                            // 更新健康状态
+                            this.healthStatus = data.health_status;
+                            this.allAnimalIds = Object.keys({ ...data.data, ...data.health_status });
+                            this.isLoading = false;
+                        })
+                      .catch(error => {
+                            console.error('获取数据时出错:', error);
+                            this.isLoading = false;
+                        });
+                },
+                openHistory(animalId) {
+                    this.isLoading = true;
+                    // 显示更明显的加载动画，这里假设已经有一个显示加载动画的方法 showLoadingAnimation
+                    this.showLoadingAnimation(); 
+
+                    axios.get(`http://127.0.0.1:5000/history/${animalId}`)
+                    .then(response => {
+                            const historyData = response.data;
+                            if (historyData.history.length > 0) {
+                                // 这里可以根据实际情况生成历史记录页面的 URL
+                                this.historyFrameUrl = `history_page.html?animalId=${animalId}`;
+                                this.showHistoryFrame = true;
+                                this.showNoHistory = false;
+                            } else {
+                                this.showHistoryFrame = false;
+                                this.showNoHistory = true;
+                            }
+                            this.isLoading = false;
+                            // 隐藏加载动画，这里假设已经有一个隐藏加载动画的方法 hideLoadingAnimation
+                            this.hideLoadingAnimation(); 
+                        })
+                    .catch(error => {
+                            console.error('获取历史记录时出错:', error);
+                            this.isLoading = false;
+                            // 隐藏加载动画
+                            this.hideLoadingAnimation(); 
+                            // 在页面上显示友好的错误提示，这里假设已经有一个显示错误提示的方法 showErrorToast
+                            this.showErrorToast('获取历史记录失败，请稍后重试'); 
+                        });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

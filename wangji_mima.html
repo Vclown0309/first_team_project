@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>密码重置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 视频背景容器 */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .video-background {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 主容器 */
+        .forgot-wrapper {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            width: 400px;
+            background: linear-gradient(145deg, rgba(10,26,58,0.9) 0%, rgba(26,58,90,0.9) 100%);
+            border: 1px solid #00f7ff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .header {
+            color: #00f7ff;
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+        }
+
+        .form-wrapper p {
+            color: #a0d7ff;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .input-item {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #4a90e2;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-item:focus {
+            border-color: #00f7ff;
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(90deg, #04be02, #039a01);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(90deg, #039a01, #028000);
+            box-shadow: 0 0 15px rgba(4, 190, 2, 0.5);
+        }
+
+        .msg {
+            text-align: center;
+            color: #4a90e2;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        a {
+            color: #00f7ff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 视频背景 -->
+    <div class="video-container">
+        <video class="video-background" autoplay loop muted>
+            <source src="视频2.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- 密码重置表单 -->
+    <div class="forgot-wrapper">
+        <div class="header">密码重置</div>
+        <div class="form-wrapper">
+            <p>请输入您注册时使用的邮箱或用户名，我们将发送密码重置邮件</p>
+            <input type="text" name="userIdentifier" 
+                   placeholder="邮箱或用户名" 
+                   class="input-item">
+            <button class="btn" id="forgotBtn">发送重置邮件</button>
+        </div>
+        <div class="msg">
+            想起密码了？
+            <a href="login.html">立即登录</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('forgotBtn').addEventListener('click', function() {
+            let userIdentifier = document.querySelector('input[name="userIdentifier"]').value;
+            if (!userIdentifier) {
+                alert('请输入您的邮箱或用户名');
+                return;
+            }
+            
+            // 示例使用fetch发送请求
+            fetch('/reset-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userIdentifier })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('重置邮件已发送至您的注册邮箱');
+                } else {
+                    alert('未找到匹配的用户信息');
+                }
+            })
+            .catch(error => {
+                console.error('请求错误:', error);
+                alert('服务暂时不可用，请稍后重试');
+            });
+        });
+    </script>
+</body>
+</html>

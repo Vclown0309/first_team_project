@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猪的历史记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #000;
+            color: #00ffcc;
+            background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+       .chart-container {
+            width: 80%;
+            max-width: 1200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ffcc;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px auto;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+        }
+
+       .history-container {
+            width: 80%;
+            max-width: 1200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ffcc;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px auto;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+        }
+
+       .history-item {
+            border-bottom: 1px solid #00ffcc;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+       .history-item:last-child {
+            border-bottom: none;
+        }
+
+       .history-item p {
+            margin: 0;
+        }
+
+       .status-normal {
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+       .status-abnormal {
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff0000;
+        }
+    </style>
+    <script src="vue.js"></script>
+    <script src="axios.js"></script>
+    <script src="chart.umd.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <canvas id="rest-chart"></canvas>
+        </div>
+        <div class="history-container">
+            <h2>猪 {{ pigId }} 的历史记录</h2>
+            <div v-for="history in pigHistory" :key="history.record_id" class="history-item">
+                <p>记录时间: {{ history.record_time }}</p>
+                <p>休息时长: {{ history.rest_duration }} 秒</p>
+                <p :class="history.health_status === '正常'? 'status-normal' :'status-abnormal'">健康状态: {{ history.health_status }}</p>
+            </div>
+            <button v-if="hasMore" @click="loadMore" class="history-button">加载更多</button>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                pigId: '',
+                pigHistory: [],
+                chart: null,
+                page: 1,
+                perPage: 10,
+                hasMore: true
+            },
+            mounted() {
+                const urlParams = new URLSearchParams(window.location.search);
+                this.pigId = urlParams.get('pigId');
+                this.fetchPigHistory();
+            },
+            methods: {
+                fetchPigHistory() {
+                    axios.get(`http://127.0.0.1:5000/history/${this.pigId}?page=${this.page}&perPage=${this.perPage}`)
+                      .then(response => {
+                            const newHistory = response.data.history;
+                            if (newHistory.length < this.perPage) {
+                                this.hasMore = false;
+                            }
+                            this.pigHistory = this.pigHistory.concat(newHistory);
+                            this.renderChart();
+                        })
+                      .catch(error => {
+                            console.error('获取历史记录时出错:', error);
+                        });
+                },
+                loadMore() {
+                    this.page++;
+                    this.fetchPigHistory();
+                },
+                renderChart() {
+                    const ctx = document.getElementById('rest-chart').getContext('2d');
+                    if (this.chart) {
+                        this.chart.destroy();
+                    }
+                    const labels = this.pigHistory.map(item => item.record_time);
+                    const data = this.pigHistory.map(item => item.rest_duration);
+                    this.chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '休息时长（秒）',
+                                data: data,
+                                backgroundColor: 'rgba(0, 255, 204, 0.2)',
+                                borderColor: 'rgba(0, 255, 204, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#00ffcc'
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            return `休息时长: ${context.parsed.y} 秒`;
+                                        }
+                                    },
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#00ffcc',
+                                    bodyColor: '#00ffcc'
+                                }
+                            },
+                            hover: {
+                                mode: 'nearest',
+                                intersect: true
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
