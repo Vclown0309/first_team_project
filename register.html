@@ -90,10 +90,29 @@
             box-shadow: 0 0 15px rgba(4, 190, 2, 0.5);
         }
 
-        .fasong {
+        .fasong_yes {
             height: 35px;
             width: 80px;
-            display: grid;
+            place-items: center;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(90deg, #04be02, #039a01);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: absolute;
+            right: 33px;
+            bottom: 262px;
+            margin-right: 10px;
+        }
+
+        .fasong_yes:hover {
+            background: linear-gradient(90deg, #039a01, #028000);
+            box-shadow: 0 0 15px rgba(4, 190, 2, 0.5);
+        }
+        .fasong_no {
+            height: 35px;
+            width: 80px;
             place-items: center;
             border: none;
             border-radius: 25px;
@@ -107,7 +126,7 @@
             margin-right: 10px;
         }
 
-        .fasong:hover {
+        .fasong_no:hover {
             background: linear-gradient(90deg, #039a01, #028000);
             box-shadow: 0 0 15px rgba(4, 190, 2, 0.5);
         }
@@ -127,32 +146,57 @@
         a:hover {
             text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
         }
+        #rs {
+            text-align: center;
+            color: #00f7ff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        #rs button {
+            color: #00f7ff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background: linear-gradient(145deg, rgba(10,26,58,0.9) 0%, rgba(26,58,90,0.9) 100%);
+        }
+        #rs button:hover {
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+        }
     </style>
 </head>
 <body>
-    <!-- 视频背景 -->
-    <div class="video-container">
-        <video class="video-background" autoplay loop muted>
-            <source src="视频2.mp4" type="video/mp4">
-        </video>
-    </div>
+    <div id="app">
+            <!-- 视频背景 -->
+        <div class="video-container">
+            <video class="video-background" autoplay loop muted>
+                <source src="视频2.mp4" type="video/mp4">
+            </video>
+        </div>
 
-    <!-- 注册表单 -->
-    <div class="login-wrapper">
-        <div class="header">用户注册</div>
-        <div class="form-wrapper">
-            <input type="text" v-model="username" placeholder="用户名" class="input-item">
-            <input type="password" v-model="pwd" placeholder="密码" class="input-item">
-            <input type="password" v-model="cpwd" placeholder="确认密码" class="input-item">
-            <input type="email" v-model="emailnumber" placeholder="邮箱" class="input-item">
-            <input type="text" v-model="yzm" placeholder="验证码" class="input-item">
-            <button class="fasong" @click="Send">发送验证码</button>
-            <button class="btn" @click="register">立即注册</button>
+        <!-- 注册表单 -->
+        <div class="login-wrapper">
+            <div class="header">用户注册</div>
+            <div class="form-wrapper">
+                <input type="text" v-model="username" placeholder="用户名" class="input-item">
+                <input type="password" v-model="pwd" placeholder="密码" class="input-item">
+                <input type="password" v-model="cpwd" placeholder="确认密码" class="input-item">
+                <input type="email" v-model="emailnumber" placeholder="邮箱" class="input-item">
+                <input type="text" v-model="yzm" placeholder="验证码" class="input-item">
+                <button class="fasong_yes" :class="{ 'fasong_yes': showSuccessPage, 'fasong_no': !showSuccessPage }" @click="Send">发送验证码</button>
+                <button class="btn" @click="register">立即注册</button>
+            </div>
+            <div class="msg">
+                已有账号？<a href="login.html">立即登录</a>
+            </div>
+            <!-- 注册成功页面 -->
+            <div v-if="showSuccessPage" id="rs">
+                <h2>注册成功！</h2>
+                <p>您已成功注册账号，现在可以登录使用。</p>
+                <button @click="goToLogin">立即登录</button>
+            </div>
         </div>
-        <div class="msg">
-            已有账号？<a href="login.html">立即登录</a>
-        </div>
+        
     </div>
+    
 
     <script>
         // 保持原有JavaScript逻辑不变
@@ -162,13 +206,14 @@
         }
 
         new Vue({
-            el: '.video-container',
+            el: '#app',
             data: {
                 username: '',
                 pwd: '',
                 cpwd: '',
                 emailnumber: '',
-                yzm: ''
+                yzm: '',
+                showSuccessPage: false // 控制注册成功页面的显示
             },
             methods: {
                 register() {
@@ -191,16 +236,25 @@
                    .then(response => {
                         alert(response.data.message);
                         if (response.status === 201) {
-                            // 注册成功，可跳转到登录页面
-                            window.location.href = 'login.html';
+                            // 注册成功后显示注册成功页面
+                            this.showSuccessPage = true;
+                        }else {
+                            // 非 201 状态码，显示后端返回的错误信息
+                            alert(response.data.message);
                         }
                     })
                    .catch(error => {
-                        console.error(error);
-                        alert('注册失败，请稍后重试');
+                        if (error.response) {
+                            // 服务器返回了错误响应
+                            alert(error.response.data.message);
+                        } else {
+                            // 网络错误或其他问题
+                            alert('注册失败，请稍后重试');
+                        }
                     });
                 },
                 Send() {
+                    console.log(this.emailnumber);
                     // 原有发送验证码逻辑
                     if (!validateEmail(this.emailnumber)) {
                         alert('请输入有效的邮箱地址');
@@ -211,18 +265,26 @@
                     })
                    .then(response => {
                         alert(response.data.message);
+                        console.log(response.data.message);
                     })
                    .catch(error => {
-                        console.error(error);
-                        alert('发送验证码失败，请稍后重试');
+                        if (error.response) {
+                            // 服务器返回了错误响应
+                            alert(error.response.data.message);
+                            console.log(error.response.data.message);
+                        } else {
+                            // 网络错误或其他问题
+                            alert('发送验证码失败，请稍后重试');
+                            console.log('发送验证码失败，请稍后重试');
+                        }
                     });
+                },
+                goToLogin() {
+                    // 点击“立即登录”按钮后跳转到登录页面
+                    window.location.href = 'login.html';
                 }
             }
         })
     </script>
 </body>
-</html>
-		}
-	})
-</script>
 </html>
