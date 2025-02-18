@@ -16,15 +16,15 @@ from email.mime.multipart import MIMEMultipart
 from email_validator import validate_email, EmailNotValidError
 logging.basicConfig(level = logging.INFO)
 # sort为选择视频还是监控的变量
-mp4_demo_list = ["../output.mp4", "../2.mp4"]
+mp4_demo_list = ["./output.mp4", "./2.mp4"]
 sort = mp4_demo_list[1]
 
 # 将克隆的 YOLOv5 仓库路径添加到系统路径中
-sys.path.append('../yolov5-master')
+sys.path.append('./yolov5-master')
 
 #  加载yolov5模型
-yolov5_dir = '../yolov5-master'  # YOLOv5 代码所在目录
-model_demo_list = ['../yolov5-master/runs/train/exp12/weights/best.pt', '../yolov5-master/runs/train/exp13/weights/best.pt']
+yolov5_dir = './yolov5-master'  # YOLOv5 代码所在目录
+model_demo_list = ['./yolov5-master/runs/train/exp12/weights/best.pt', './yolov5-master/runs/train/exp13/weights/best.pt']
 model_path = model_demo_list[1]  # 本地模型文件路径
 model = torch.hub.load(yolov5_dir, 'custom', path=model_path, source='local')
 # 设置置信度阈值为 0.6
@@ -309,6 +309,37 @@ def is_valid_email(email):
 def generate_verification_code(length=6):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
+@app.route('/reset_password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    email = data.get('email')
+    verificationCode = data.get('verificationCode')
+    newPassword = data.get('newPassword')
+
+    if not all([email, verificationCode, newPassword]):
+        return jsonify({'message': '请提供邮箱、验证码和新密码'}), 400
+
+    stored_code = verification_codes.get(email)
+    if not stored_code or stored_code != verificationCode:
+        return jsonify({'message': '验证码无效'}), 400
+
+    conn = pymysql.connect(**dic)
+    cursor = conn.cursor()
+    try:
+        sql = "UPDATE users SET password = %s WHERE email = %s"
+        cursor.execute(sql, (newPassword, email))
+        conn.commit()
+        del verification_codes[email]
+        return jsonify({'message': '密码重置成功'}), 200
+    except pymysql.Error as e:
+        print(f"数据库错误: {e}")
+        conn.rollback()
+        return jsonify({'message': '密码重置失败，请稍后重试'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 # 获取当前用户信息
 @app.route('/uinfo', methods=['GET'])
 def get_user_info():

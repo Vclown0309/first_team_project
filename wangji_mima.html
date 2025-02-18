@@ -113,6 +113,8 @@
             text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
         }
     </style>
+    <script src="vue.js"></script>
+    <script src="axios.js"></script>
 </head>
 <body>
     <!-- 视频背景 -->
@@ -121,16 +123,18 @@
             <source src="视频2.mp4" type="video/mp4">
         </video>
     </div>
-
     <!-- 密码重置表单 -->
-    <div class="forgot-wrapper">
+    <div id="app" class="forgot-wrapper">
         <div class="header">密码重置</div>
         <div class="form-wrapper">
             <p>请输入您注册时使用的邮箱或用户名，我们将发送密码重置邮件</p>
-            <input type="text" name="userIdentifier" 
-                   placeholder="邮箱或用户名" 
-                   class="input-item">
-            <button class="btn" id="forgotBtn">发送重置邮件</button>
+            <input type="text" v-model="userIdentifier" placeholder="邮箱或用户名" class="input-item">
+            <button class="btn" @click="sendResetEmail">发送重置邮件</button>
+            <div v-if="showVerifyForm">
+                <input type="text" v-model="verificationCode" placeholder="请输入验证码" class="input-item">
+                <input type="password" v-model="newPassword" placeholder="请输入新密码" class="input-item">
+                <button class="btn" @click="resetPassword">重置密码</button>
+            </div>
         </div>
         <div class="msg">
             想起密码了？
@@ -139,33 +143,59 @@
     </div>
 
     <script>
-        document.getElementById('forgotBtn').addEventListener('click', function() {
-            let userIdentifier = document.querySelector('input[name="userIdentifier"]').value;
-            if (!userIdentifier) {
-                alert('请输入您的邮箱或用户名');
-                return;
-            }
-            
-            // 示例使用fetch发送请求
-            fetch('/reset-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+        new Vue({
+            el: '#app',
+            data: {
+                userIdentifier: '',
+                verificationCode: '',
+                newPassword: '',
+                showVerifyForm: false
+            },
+            methods: {
+                sendResetEmail() {
+                    if (this.userIdentifier) {
+                        axios.post('http://127.0.0.1:5000/send_verification_code', {
+                            email: this.userIdentifier
+                        })
+                    .then(response => {
+                            if (response.data.message === '验证码已发送，请查收') {
+                                this.showVerifyForm = true;
+                            } else {
+                                alert(response.data.message);
+                            }
+                        })
+                    .catch(error => {
+                            console.error('发送重置邮件请求出错', error);
+                            alert('发送重置邮件失败，请稍后重试');
+                        });
+                    } else {
+                        alert('请输入邮箱或用户名');
+                    }
                 },
-                body: JSON.stringify({ userIdentifier })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('重置邮件已发送至您的注册邮箱');
-                } else {
-                    alert('未找到匹配的用户信息');
+                resetPassword() {
+                    if (this.userIdentifier && this.verificationCode && this.newPassword) {
+                        axios.post('http://127.0.0.1:5000/reset_password', {
+                            email: this.userIdentifier,
+                            verificationCode: this.verificationCode,
+                            newPassword: this.newPassword
+                        })
+                    .then(response => {
+                            if (response.data.message === '密码重置成功') {
+                                alert('密码重置成功，请重新登录');
+                                window.location.href = 'login.html';
+                            } else {
+                                alert(response.data.message);
+                            }
+                        })
+                    .catch(error => {
+                            console.error('密码重置请求出错', error);
+                            alert('密码重置失败，请稍后重试');
+                        });
+                    } else {
+                        alert('请输入完整信息');
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('请求错误:', error);
-                alert('服务暂时不可用，请稍后重试');
-            });
+            }
         });
     </script>
 </body>
