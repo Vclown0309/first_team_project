@@ -117,6 +117,10 @@
             margin-right: 10px;
             vertical-align: middle;
         }
+
+        #em {
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
@@ -132,12 +136,14 @@
         <p id="heading">用户登录</p>
         <div class="login_box">
             <img src="登录.png" class="icon" alt="用户图标">
-            <input class="shuru_zhanghao" type="text" placeholder="请输入账号">
+            <input class="shuru_zhanghao" type="text" placeholder="请输入账号" v-model="username">
             
             <img src="密码.png" class="icon" alt="密码图标">
-            <input class="shuru_mima" type="password" placeholder="请输入密码">
+            <input class="shuru_mima" type="password" placeholder="请输入密码" v-model="password">
         </div>
-        
+        <!-- 错误信息显示 -->
+        <div id="em" v-if="errorMessage" style="color: red; margin-top: 10px;">{{ errorMessage }}</div>
+        <!-- 登录和注册按钮 -->
         <div style="width: 100%; display: flex; justify-content: space-between;">
             <button class="denglu_anniu" @click="Login">登录</button>
             <button class="zhuce_anniu" @click="Register">注册</button>
@@ -154,9 +160,36 @@
             data: {
                 username: '',
                 password: '',
+                errorMessage: '',
             },
             methods: {
                 Login() {
+                    // 检查用户名和密码是否为空
+                    if (!this.username || !this.password) {
+                        this.errorMessage = '用户名和密码不能为空';
+                        return;
+                    }
+
+                    // 发送登录请求
+                    axios.post('http://127.0.0.1:5000/login', {
+                        username: this.username,
+                        password: this.password
+                    })
+                   .then(response => {
+                        if (response.status === 200) {
+                            // 修改部分：存储用户名到本地存储
+                            localStorage.setItem('username', response.data.username);
+                            alert(`登录成功${response.data.username}`);
+                            // 这里可以添加跳转到主页等操作
+                            window.location.href = 'index.html';
+                        } else {
+                            this.errorMessage = response.data.message;
+                        }
+                    })
+                   .catch(error => {
+                        console.error(error);
+                        this.errorMessage = '登录失败，请稍后重试';
+                    });
                 },
                 Register() {
                     window.location.href = 'register.html';

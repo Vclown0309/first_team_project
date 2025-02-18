@@ -91,8 +91,15 @@
 
         .yonghu_touxiang,
         .yonghu_nicheng {
-            margin-left: 20px;
-            color: #ffffff;
+            text-align: center;
+            width: 100px;
+            height: 40px;
+            border-radius: 20px;
+            border: 2px solid #00f7ff;
+            color: #00f7ff; /* 霓虹青色 */;
+            line-height: 32px;
+            position: absolute;
+            right: 40px;
         }
 
         .shipin {
@@ -191,6 +198,10 @@
 
         .history-button:hover {
             background-color: rgba(0, 247, 255, 0.4);
+        }
+        .yonghu_nicheng:hover {
+            background-color: rgba(0, 247, 255, 0.4);
+            cursor: pointer;
         }
 
         /* 加载动画样式 */
@@ -317,13 +328,12 @@
             <div>
                 <button @click="goToAllPigsHistory" class="history-button-right-top" >查看所有猪的历史记录</button>
             </div>
-            <div class="yonghu_touxiang">1</div>
-            <div class="yonghu_nicheng">2</div>
+            <div class="yonghu_nicheng" @click="ToUserInfo">{{username}}</div>
         </div>
         <div class="zhuyaogongneng" >
             <div class="shipin-container">
                 <div class="shipin">
-                    <img id="pig" src="http://127.0.0.1:5000/video_feed" alt="Video Feed">
+                    <!-- <img id="pig" src="http://127.0.0.1:5000/video_feed" alt="Video Feed"> -->
                 </div>
                 <div class="shipin_fenxi">
                     <!-- 用于绘制休息时长柱状图 -->
@@ -371,7 +381,8 @@
                 showHistoryFrame: false,
                 historyFrameUrl: '',
                 showNoHistory: false,
-                isHistoryButtonActive: false
+                isHistoryButtonActive: false,
+                username:'',
             },
             mounted() {
                 this.isLoading = true;
@@ -428,7 +439,21 @@
                 const updateInterval = 5 * 1000; // 5 秒钟
                 setInterval(this.updateChart, updateInterval);
             },
+            created() {
+                    // 修改部分：从本地存储获取用户名
+                    this.username = localStorage.getItem('username');
+                    alert(this.username);
+                    if (!this.username) {
+                        // 修改部分：若未获取到用户名，重定向到登录页面
+                        window.location.href = 'login.html';
+                    }
+                    // 修改部分：存储用户名到本地存储
+                    localStorage.setItem('username', this.username);
+                },
             methods: {
+                ToUserInfo() {
+                    window.location.href = 'user_info.html';
+                },
                 goToAllPigsHistory() {
                     window.location.href = 'all_pigs_history.html';
                 },
@@ -524,7 +549,8 @@
                             // 在页面上显示友好的错误提示，这里假设已经有一个显示错误提示的方法 showErrorToast
                             this.showErrorToast('获取历史记录失败，请稍后重试'); 
                         });
-                }
+                },
+                
             }
         });
     </script>
