@@ -141,14 +141,21 @@
                     const username = this.user.username;
                     if (!username) {
                         this.errorMessage = '请先登录';
+                        this.successMessage = '';
                         return;
                     }
                     if (!this.old_password || !this.new_password) {
                         this.errorMessage = '请同时输入旧密码和新密码';
+                        this.successMessage = '';
+                        this.old_password = '';
+                        this.new_password = '';
                         return; 
                     }
                     if (this.old_password === this.new_password) {
                         this.errorMessage = '新密码不能与旧密码相同';
+                        this.successMessage = '';
+                        this.old_password = '';
+                        this.new_password = '';
                         return; 
                     }
                     axios.post('http://127.0.0.1:5000/change_password', {

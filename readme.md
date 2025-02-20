@@ -12,8 +12,9 @@ git clone https://github.com/Vclown0309/first_team_project.git
 ```
 然后，进入项目目录并安装依赖项：
 ```python
-cd first_team_project
+cd first_team_project-master
 cd yolov5-master
+（由于未知原因，runs文件夹不翼而飞，有意者联系俺,邮箱：3011588309@qq.com）
 # 在下载依赖前，先前往官网安装torch相关依赖，然后再安装yolov5：
 # pytorch官网：pytorch.org
 '''
@@ -89,10 +90,11 @@ dic = {
     "charset": '填写你选择的数据库编码格式即可'  # 编码格式 直接填无需‘-’
 }
 """
+```
 ***简单说哈数据库这个启动的方式，小白而言，不想手动启动的参考我的source文件夹下，***
 ***我将会分享一个软件（小皮）用于一键启动数据库附赠教程***
-```
-- `login.html`：前端登录页面。
+
+- login.html`：前端登录页面。
 - `register.html`：前端注册页面。
 - `index.html`：前端主页面。
 - `all_pigs_history.html`：前端总历史数据页面。
