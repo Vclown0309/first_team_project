@@ -1,112 +1,245 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户信息</title>
+    <title>用户信息中心</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        .login {
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            height: 100%;
+            width: auto;
+            object-fit: cover;
+        }
+
+        .dinglan {
+            width: 100%;
+            height: 100px;
+            background-image: linear-gradient(145deg, #0a1a3a 0%, #1a3a5a 100%);
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
+            padding: 0 30px;
+            border-bottom: 2px solid #00f7ff;
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .ming {
+            font-family: "华文行楷", cursive;
+            color: #00f7ff;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+            flex-grow: 1;
         }
 
         .container {
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 20px;
-            width: 400px;
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 40px;
+            background: rgba(16, 32, 64, 0.9);
+            border: 2px solid #4a90e2;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(74, 144, 226, 0.4);
+            backdrop-filter: blur(10px);
         }
 
-        h1 {
-            text-align: center;
-            color: #007BFF;
+        .info-section {
+            margin-bottom: 30px;
         }
 
         .info-item {
-            margin-bottom: 15px;
+            margin: 20px 0;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            text-shadow: 0 0 5px rgba(127, 140, 141, 0.5);
         }
 
         input {
             width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px 20px;
+            background: rgba(10, 26, 58, 0.8);
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            color: #00f7ff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
-        button {
-            background-color: #007BFF;
+        input:focus {
+            border-color: #00f7ff;
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            outline: none;
+        }
+
+        input[disabled] {
+            background: rgba(16, 32, 64, 0.6);
+            cursor: not-allowed;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
-            padding: 10px 15px;
+            padding: 12px 30px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-size: 1.1rem;
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
             width: 100%;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .message {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
         }
 
         .error-message {
-            color: red;
-            margin-top: 10px;
-            text-align: center;
+            background: rgba(255, 68, 68, 0.15);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            text-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
         }
 
         .success-message {
-            color: green;
-            margin-top: 10px;
-            text-align: center;
+            background: rgba(0, 200, 81, 0.15);
+            border: 1px solid #00C851;
+            color: #00C851;
+            text-shadow: 0 0 5px rgba(0, 200, 81, 0.3);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 247, 255, 0.2);
+            border-top: 4px solid #00f7ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 
 <body>
-    <div id="app" class="container">
-        <h1>用户信息</h1>
-        <div class="info-item">
-            <label>用户名</label>
-            <input type="text" v-model="user.username" disabled>
+    <div id="app">
+        <div class="login">
+            <video class="video-background" autoplay loop muted>
+                <source src="视频2.mp4" type="video/mp4">
+                <img src="fallback-bg.jpg" alt="背景图片">
+            </video>
         </div>
-        <div class="info-item">
-            <label>邮箱</label>
-            <input type="text" v-model="user.email" disabled>
+        
+        <div class="dinglan">
+            <div class="ming">用户信息中心</div>
         </div>
-        <div class="info-item">
-            <label>创建时间</label>
-            <input type="text" v-model="user.create_time" disabled>
+
+        <div class="container">
+            <div class="info-section">
+                <div class="info-item">
+                    <label>用户名称</label>
+                    <input type="text" v-model="user.username" disabled>
+                </div>
+                <div class="info-item">
+                    <label>电子邮箱</label>
+                    <input type="email" v-model="user.email" disabled>
+                </div>
+                <div class="info-item">
+                    <label>注册时间</label>
+                    <input type="text" v-model="formattedCreateTime" disabled>
+                </div>
+            </div>
+
+            <h2 style="color:#00f7ff; margin:30px 0 20px; text-align:center;">安全设置</h2>
+            
+            <div class="info-section">
+                <div class="info-item">
+                    <label>当前密码</label>
+                    <input type="password" v-model="oldPassword">
+                </div>
+                <div class="info-item">
+                    <label>新密码</label>
+                    <input type="password" v-model="newPassword">
+                </div>
+                <div class="info-item">
+                    <label>确认密码</label>
+                    <input type="password" v-model="confirmPassword">
+                </div>
+                
+                <button class="action-button" @click="changePassword">更新安全设置</button>
+            </div>
+
+            <div class="message" :class="{ 
+                'error-message': errorMessage, 
+                'success-message': successMessage 
+            }">
+                {{ errorMessage || successMessage }}
+            </div>
         </div>
-        <h2>修改密码</h2>
-        <div class="info-item">
-            <label>旧密码</label>
-            <input type="password" v-model="old_password">
+
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
         </div>
-        <div class="info-item">
-            <label>新密码</label>
-            <input type="password" v-model="new_password">
-        </div>
-        <button @click="changePassword">修改密码</button>
-        <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
-        <p class="success-message" v-if="successMessage">{{ successMessage }}</p>
     </div>
+
     <script src="vue.js"></script>
     <script src="axios.js"></script>
     <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        
         new Vue({
             el: '#app',
             data: {
@@ -115,68 +248,99 @@
                     email: '',
                     create_time: ''
                 },
-                old_password: '',
-                new_password: '',
+                oldPassword: '',
+                newPassword: '',
+                confirmPassword: '',
                 errorMessage: '',
                 successMessage: ''
             },
-            mounted() {
-                const username = localStorage.getItem('username');
-                if (username) {
-                    axios.get('http://127.0.0.1:5000/uinfo', {
-                        params: {
-                            username: username
-                        }
-                    })
-                    .then(response => {
-                            this.user = response.data;
-                        })
-                    .catch(error => {
-                            console.error('请求出错', error);
-                        });
+            computed: {
+                formattedCreateTime() {
+                    return this.user.create_time 
+                        ? new Date(this.user.create_time).toLocaleString('zh-CN')
+                        : '未知时间';
                 }
             },
+            mounted() {
+                this.checkAuth();
+                this.fetchUserInfo();
+            },
             methods: {
-                changePassword() {
-                    const username = this.user.username;
-                    if (!username) {
-                        this.errorMessage = '请先登录';
-                        this.successMessage = '';
-                        return;
+                checkAuth() {
+                    if (!localStorage.getItem('username')) {
+                        window.location.href = 'login.html';
                     }
-                    if (!this.old_password || !this.new_password) {
-                        this.errorMessage = '请同时输入旧密码和新密码';
-                        this.successMessage = '';
-                        this.old_password = '';
-                        this.new_password = '';
-                        return; 
-                    }
-                    if (this.old_password === this.new_password) {
-                        this.errorMessage = '新密码不能与旧密码相同';
-                        this.successMessage = '';
-                        this.old_password = '';
-                        this.new_password = '';
-                        return; 
-                    }
-                    axios.post('http://127.0.0.1:5000/change_password', {
-                        username: username,
-                        old_password: this.old_password,
-                        new_password: this.new_password
-                    })
-                       .then(response => {
-                            this.successMessage = response.data.message;
-                            this.errorMessage = '';
-                            this.old_password = '';
-                            this.new_password = '';
-                        })
-                       .catch(error => {
-                            this.errorMessage = error.response.data.message;
-                            this.successMessage = '';
+                },
+
+                async fetchUserInfo() {
+                    try {
+                        const response = await axios.get(`${API_BASE_URL}/uinfo`, {
+                            params: { username: localStorage.getItem('username') }
                         });
+                        this.user = response.data;
+                    } catch (error) {
+                        this.handleError(error, '获取用户信息失败');
+                    }
+                },
+
+                async changePassword() {
+                    try {
+                        this.validatePassword();
+                        this.showLoading();
+
+                        await axios.post(`${API_BASE_URL}/change_password`, {
+                            username: this.user.username,
+                            old_password: this.oldPassword,
+                            new_password: this.newPassword
+                        });
+
+                        this.successMessage = '密码更新成功';
+                        this.clearForm();
+                        setTimeout(() => this.successMessage = '', 3000);
+                    } catch (error) {
+                        this.handleError(error, '密码修改失败');
+                    } finally {
+                        this.hideLoading();
+                    }
+                },
+
+                validatePassword() {
+                    if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
+                        throw new Error('请填写所有密码字段');
+                    }
+                    if (this.newPassword !== this.confirmPassword) {
+                        throw new Error('新密码与确认密码不一致');
+                    }
+                    if (this.newPassword === this.oldPassword) {
+                        throw new Error('新密码不能与旧密码相同');
+                    }
+                    if (!/^(?=.*[A-Za-z])(?=.*\d)[\w!@#$%^&*]{8,}$/.test(this.newPassword)) {
+                        throw new Error('密码需至少8位，包含字母和数字');
+                    }
+                },
+
+                handleError(error, defaultMsg) {
+                    this.errorMessage = error.response?.data?.message 
+                        || error.message 
+                        || defaultMsg;
+                    setTimeout(() => this.errorMessage = '', 5000);
+                },
+
+                showLoading() {
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                },
+
+                hideLoading() {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                },
+
+                clearForm() {
+                    this.oldPassword = '';
+                    this.newPassword = '';
+                    this.confirmPassword = '';
                 }
             }
         });
     </script>
 </body>
-
 </html>
