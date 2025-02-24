@@ -163,15 +163,24 @@
                 password: '',
                 errorMessage: '',
             },
+            created() {
+                // 检查本地存储中是否有用户名
+                const storedUsername = localStorage.getItem('username');
+                if (storedUsername) {
+                    storedUsername='';
+                }
+            },
             methods: {
                 Login() {
                     // 检查用户名和密码是否为空
                     if (!this.username || !this.password) {
                         this.errorMessage = '用户名和密码不能为空';
+                        setTimeout(() => this.errorMessage = '', 3000);
                         return;
                     }
                     if (!/^(?=.*[A-Za-z])(?=.*\d)[\w!@#$%^&*]{8,}$/.test(this.password)) {
                         this.errorMessage='密码需至少8位，包含字母和数字';
+                        setTimeout(() => this.errorMessage = '', 3000);
                         return;
                     }
 
@@ -189,11 +198,13 @@
                             window.location.href = 'index.html';
                         } else {
                             this.errorMessage = response.data.message;
+                            setTimeout(() => this.errorMessage = '', 3000);
                         }
                     })
                    .catch(error => {
                         console.error(error);
                         this.errorMessage = '登录失败，请稍后重试';
+                        setTimeout(() => this.errorMessage = '', 3000);
                     });
                 },
                 Register() {
