@@ -119,8 +119,9 @@
         }
 
         #em {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
+
     </style>
 </head>
 <body>
@@ -142,7 +143,7 @@
             <input class="shuru_mima" type="password" placeholder="请输入密码" v-model="password">
         </div>
         <!-- 错误信息显示 -->
-        <div id="em" v-if="errorMessage" style="color: red; margin-top: 10px;">{{ errorMessage }}</div>
+        <div id="em" v-if="errorMessage" style="color: red;">{{ errorMessage }}</div>
         <!-- 登录和注册按钮 -->
         <div style="width: 100%; display: flex; justify-content: space-between;">
             <button class="denglu_anniu" @click="Login">登录</button>
@@ -167,6 +168,10 @@
                     // 检查用户名和密码是否为空
                     if (!this.username || !this.password) {
                         this.errorMessage = '用户名和密码不能为空';
+                        return;
+                    }
+                    if (!/^(?=.*[A-Za-z])(?=.*\d)[\w!@#$%^&*]{8,}$/.test(this.password)) {
+                        this.errorMessage='密码需至少8位，包含字母和数字';
                         return;
                     }
 
