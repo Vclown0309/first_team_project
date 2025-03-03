@@ -208,9 +208,10 @@ pig_info = {}
 start_time = time.time()
 # 获取视频的 FPS
 fps = cap.get(cv2.CAP_PROP_FPS)
-interval = 1/fps  # 时间间隔，用于计算休息时长
+interval = round(1/fps,2)  # 时间间隔，用于计算休息时长
 time_window = 60  # 时间窗口，单位：秒
 accumulated_rest_times = {}  # 存储每头猪在时间窗口内累加的休息时长
+move_px=100
 print("全局变量初始化完成")
 
 def generate_frames():
@@ -246,7 +247,7 @@ def generate_frames():
                 else:
                     last_center = pig_info[pig_id]['last_center']
                     distance = ((center_x - last_center[0]) ** 2 + (center_y - last_center[1]) ** 2) ** 0.5
-                    if distance <= 5:  # 判断是否移动距离小于阈值
+                    if distance <= move_px:  # 判断是否移动距离小于阈值
                         if pig_info[pig_id]['is_resting']:
                             pig_info[pig_id]['rest_time'] += interval
                             accumulated_rest_times[pig_id] += interval
@@ -289,7 +290,7 @@ def generate_frames():
                         if conn:
                             conn.close()
                 # 重置累加数据和开始时间
-                accumulated_rest_times = {}
+                pig_info={}
                 start_time = current_time
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
@@ -890,6 +891,8 @@ def daily_rest_data_by_animal():
 def all_pig_ids():
     conn = None
     cursor = None
+    # 从 pig_info 中获取当前检测到的猪 ID
+    pigs_id = list(pig_info.keys())
     try:
         conn = pymysql.connect(**dic)
         cursor = conn.cursor()
@@ -900,9 +903,66 @@ def all_pig_ids():
 
         pig_ids = [row[0] for row in results]
 
-        return jsonify({'pig_ids': pig_ids})
+        return jsonify({'pig_ids': pig_ids,
+                        'detect_pigs':pigs_id})
     except pymysql.Error as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+@app.route('/daily_rest_data')
+def daily_rest_data():
+    conn = None
+    cursor = None
+    try:
+        # 连接数据库
+        conn = pymysql.connect(**dic)
+        cursor = conn.cursor()
+
+        # 获取当前日期
+        today = datetime.now().date()
+        start_of_day = datetime.combine(today, datetime.min.time())
+        end_of_day = datetime.combine(today, datetime.max.time())
+
+        # 查询当日每头猪的总休息时长
+        sql = """
+            SELECT 
+                animal_id, 
+                SUM(rest_duration) AS total_rest_duration
+            FROM 
+                rest_records
+            WHERE 
+                record_time BETWEEN %s AND %s
+            GROUP BY 
+                animal_id
+        """
+        values = (start_of_day, end_of_day)
+        cursor.execute(sql, values)
+        results = cursor.fetchall()
+
+        daily_rest_dict = {row[0]: row[1] for row in results}
+
+        if not daily_rest_dict:
+            return jsonify({'message': '今日暂无休息时长数据'})
+
+        return jsonify({
+            'data': daily_rest_dict,
+            'last_updated': int(time.time())
+        })
+    except pymysql.Error as e:
+        error_info = {
+            'error': 'DatabaseError',
+            'message': str(e)
+        }
+        return jsonify(error_info), 500
+    except Exception as e:
+        error_info = {
+            'error': 'InternalServerError',
+            'message': str(e)
+        }
+        return jsonify(error_info), 500
     finally:
         if cursor:
             cursor.close()
